@@ -18,8 +18,6 @@ services:
       CONDUIT_ADDRESS: "0.0.0.0"
     volumes:
       - conduit-data:/var/lib/matrix-conduit
-    networks:
-      - default
 
   # --------------------------------------------------------------------------
   # 2. PONT (BRIDGE) META : mautrix-meta
@@ -29,8 +27,6 @@ services:
     restart: unless-stopped
     volumes:
       - bridge-data:/data
-    networks:
-      - default
     depends_on:
       - conduit
 
@@ -52,8 +48,6 @@ services:
       CRON_SCHEDULE_HOUR: "23"
     volumes:
       - summarizer-data:/app/data
-    networks:
-      - default
     depends_on:
       - conduit
 
