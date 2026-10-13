@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   # --------------------------------------------------------------------------
-  # 1. SERVEUR MATRIX : Conduit (Ultra-léger en Rust, remplace Synapse)
+  # 1. SERVEUR MATRIX : Conduit (Ultra-léger en Rust)
   # --------------------------------------------------------------------------
   conduit:
     image: matrixconduit/matrix-conduit:latest
@@ -11,35 +11,31 @@ services:
       CONDUIT_SERVER_NAME: matrix.oussamma.tn
       CONDUIT_DATABASE_BACKEND: rocksdb
       CONDUIT_PORT: 6167
-      CONDUIT_MAX_REQUEST_SIZE: 20000000 # 20MB
-      CONDUIT_ALLOW_REGISTRATION: "false" # Inscription fermée (création via admin CLI ou appservice)
-      CONDUIT_ALLOW_FEDERATION: "false"   # Désactivé pour économiser les ressources (privé)
+      CONDUIT_MAX_REQUEST_SIZE: 20000000
+      CONDUIT_ALLOW_REGISTRATION: "false"
+      CONDUIT_ALLOW_FEDERATION: "false"
       CONDUIT_TRUSTED_SERVERS: '["matrix.org"]'
       CONDUIT_ADDRESS: "0.0.0.0"
     volumes:
       - conduit-data:/var/lib/matrix-conduit
     networks:
       - matrix-net
-    labels:
-      - "coolify.managed=true"
 
   # --------------------------------------------------------------------------
-  # 2. PONT (BRIDGE) META : mautrix-meta (Facebook Messenger + Instagram)
+  # 2. PONT (BRIDGE) META : mautrix-meta
   # --------------------------------------------------------------------------
   mautrix-meta:
     image: dock.mau.dev/mautrix/meta:latest
     restart: unless-stopped
     volumes:
-      - ./bridge-data:/data
+      - bridge-data:/data
     networks:
       - matrix-net
     depends_on:
       - conduit
-    labels:
-      - "coolify.managed=true"
 
   # --------------------------------------------------------------------------
-  # 3. SERVICE RÉSUMÉ IA & DIGEST (Python FastAPI / Cron)
+  # 3. INTERFACE WEB ET DIGEST IA (FastAPI)
   # --------------------------------------------------------------------------
   matrix-summarizer:
     build:
@@ -49,21 +45,20 @@ services:
     environment:
       MATRIX_HOMESERVER_URL: "http://conduit:6167"
       MATRIX_BOT_USERNAME: "@summarizer:matrix.oussamma.tn"
-      MATRIX_BOT_PASSWORD: "${SUMMARIZER_BOT_PASSWORD}"
+      MATRIX_BOT_PASSWORD: "${SUMMARIZER_BOT_PASSWORD:-admin123}"
       OPENAI_API_BASE: "${AI_PROXY_URL:-https://ai.oussamma.tn/v1}"
-      OPENAI_API_KEY: "${AI_API_KEY}"
-      CRON_SCHEDULE_HOUR: "23" # Résumé chaque soir à 23h
+      OPENAI_API_KEY: "${AI_API_KEY:-}"
+      CRON_SCHEDULE_HOUR: "23"
     volumes:
       - summarizer-data:/app/data
     networks:
       - matrix-net
     depends_on:
       - conduit
-    labels:
-      - "coolify.managed=true"
 
 volumes:
   conduit-data:
+  bridge-data:
   summarizer-data:
 
 networks:
