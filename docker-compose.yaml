@@ -18,6 +18,8 @@ services:
       CONDUIT_ADDRESS: "0.0.0.0"
     volumes:
       - conduit-data:/var/lib/matrix-conduit
+    networks:
+      - default
 
   # --------------------------------------------------------------------------
   # 2. INTERFACE WEB ET DIGEST IA (FastAPI)
@@ -37,9 +39,17 @@ services:
       CRON_SCHEDULE_HOUR: "23"
     volumes:
       - summarizer-data:/app/data
+    networks:
+      - default
+      - coolify
     depends_on:
       - conduit
 
 volumes:
   conduit-data:
   summarizer-data:
+
+networks:
+  default:
+  coolify:
+    external: true
