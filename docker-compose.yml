@@ -25,6 +25,7 @@ services:
   mautrix-meta:
     image: dock.mau.dev/mautrix/meta:latest
     restart: unless-stopped
+    command: ["sh", "-c", "if [ ! -f /data/config.yaml ]; then /usr/bin/mautrix-meta -g; fi; exec /usr/bin/mautrix-meta"]
     volumes:
       - bridge-data:/data
     depends_on:
