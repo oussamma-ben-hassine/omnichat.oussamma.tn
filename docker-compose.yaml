@@ -53,6 +53,7 @@ services:
       - summarizer-data:/app/data
     networks:
       - matrix-net
+      - coolify
     depends_on:
       - conduit
     labels:
@@ -71,3 +72,5 @@ volumes:
 networks:
   matrix-net:
     driver: bridge
+  coolify:
+    external: true
