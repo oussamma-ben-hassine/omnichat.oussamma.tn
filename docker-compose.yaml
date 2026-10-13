@@ -19,7 +19,7 @@ services:
     volumes:
       - conduit-data:/var/lib/matrix-conduit
     networks:
-      - matrix-net
+      - default
 
   # --------------------------------------------------------------------------
   # 2. PONT (BRIDGE) META : mautrix-meta
@@ -30,19 +30,20 @@ services:
     volumes:
       - bridge-data:/data
     networks:
-      - matrix-net
+      - default
     depends_on:
       - conduit
 
   # --------------------------------------------------------------------------
   # 3. INTERFACE WEB ET DIGEST IA (FastAPI)
   # --------------------------------------------------------------------------
-  matrix-summarizer:
+  web:
     build:
       context: ./summarizer
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
+      PORT: 8000
       MATRIX_HOMESERVER_URL: "http://conduit:6167"
       MATRIX_BOT_USERNAME: "@summarizer:matrix.oussamma.tn"
       MATRIX_BOT_PASSWORD: "${SUMMARIZER_BOT_PASSWORD:-admin123}"
@@ -52,25 +53,11 @@ services:
     volumes:
       - summarizer-data:/app/data
     networks:
-      - matrix-net
-      - coolify
+      - default
     depends_on:
       - conduit
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.omnichat.rule=Host(`omnichat.oussamma.tn`)"
-      - "traefik.http.routers.omnichat.entrypoints=https"
-      - "traefik.http.routers.omnichat.tls=true"
-      - "traefik.http.routers.omnichat.tls.certresolver=letsencrypt"
-      - "traefik.http.services.omnichat.loadbalancer.server.port=8000"
 
 volumes:
   conduit-data:
   bridge-data:
   summarizer-data:
-
-networks:
-  matrix-net:
-    driver: bridge
-  coolify:
-    external: true
