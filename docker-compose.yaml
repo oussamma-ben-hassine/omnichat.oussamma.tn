@@ -20,19 +20,7 @@ services:
       - conduit-data:/var/lib/matrix-conduit
 
   # --------------------------------------------------------------------------
-  # 2. PONT (BRIDGE) META : mautrix-meta
-  # --------------------------------------------------------------------------
-  mautrix-meta:
-    image: dock.mau.dev/mautrix/meta:latest
-    restart: unless-stopped
-    command: ["sh", "-c", "if [ ! -f /data/config.yaml ]; then /usr/bin/mautrix-meta -g; fi; exec /usr/bin/mautrix-meta"]
-    volumes:
-      - bridge-data:/data
-    depends_on:
-      - conduit
-
-  # --------------------------------------------------------------------------
-  # 3. INTERFACE WEB ET DIGEST IA (FastAPI)
+  # 2. INTERFACE WEB ET DIGEST IA (FastAPI)
   # --------------------------------------------------------------------------
   web:
     build:
@@ -54,5 +42,4 @@ services:
 
 volumes:
   conduit-data:
-  bridge-data:
   summarizer-data:
