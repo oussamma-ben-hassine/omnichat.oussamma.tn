@@ -55,6 +55,13 @@ services:
       - matrix-net
     depends_on:
       - conduit
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.omnichat.rule=Host(`omnichat.oussamma.tn`)"
+      - "traefik.http.routers.omnichat.entrypoints=https"
+      - "traefik.http.routers.omnichat.tls=true"
+      - "traefik.http.routers.omnichat.tls.certresolver=letsencrypt"
+      - "traefik.http.services.omnichat.loadbalancer.server.port=8000"
 
 volumes:
   conduit-data:
