@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OmniChat & AI Digest - oussamma.tn</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- BARRE LATERALE GAUCHE : NAVIGATION & CANAUX -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">✨</div>
+        <div class="brand-text">
+          <h1>OmniChat</h1>
+          <span>oussamma.tn ecosystem</span>
+        </div>
+      </div>
+
+      <!-- STATUS DES COMPTES -->
+      <div class="section-title">Comptes Connectés</div>
+      <div class="accounts-card">
+        <div class="account-item" id="fb-status-pill">
+          <div class="acc-info">
+            <span class="icon-social fb">f</span>
+            <div>
+              <strong>Messenger</strong>
+              <small id="fb-status-text">Non connecté</small>
+            </div>
+          </div>
+          <button class="btn-connect" onclick="openConnectModal('facebook')">Lier</button>
+        </div>
+
+        <div class="account-item" id="ig-status-pill">
+          <div class="acc-info">
+            <span class="icon-social ig">📸</span>
+            <div>
+              <strong>Instagram DM</strong>
+              <small id="ig-status-text">Non connecté</small>
+            </div>
+          </div>
+          <button class="btn-connect" onclick="openConnectModal('instagram')">Lier</button>
+        </div>
+      </div>
+
+      <!-- LISTE DES CONVERSATIONS -->
+      <div class="section-title">
+        <span>Conversations Captées</span>
+        <button class="btn-icon" onclick="loadConversations()" title="Actualiser">🔄</button>
+      </div>
+
+      <div class="conv-list" id="conv-list">
+        <div class="loading-state">Chargement des flux...</div>
+      </div>
+
+      <!-- FOOTER SIDEBAR -->
+      <div class="sidebar-footer">
+        <button class="btn-action-primary" onclick="generateDailyDigest()">
+          <span>⚡ Générer Résumé IA du Jour</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- FENETRE PRINCIPALE : LECTURE DU FIL & IA -->
+    <main class="chat-main">
+      <header class="chat-header">
+        <div class="header-details">
+          <h2 id="current-chat-title">Sélectionnez une discussion</h2>
+          <span id="current-chat-meta">Discussions captées en temps réel par Mautrix</span>
+        </div>
+        <div class="header-actions">
+          <button class="btn-secondary" onclick="generateRoomSummary()">🤖 Résumer cette conversation</button>
+        </div>
+      </header>
+
+      <!-- ZONE DES MESSAGES -->
+      <div class="messages-container" id="messages-container">
+        <div class="empty-selection">
+          <div class="empty-icon">💬</div>
+          <h3>Aucune conversation sélectionnée</h3>
+          <p>Cliquez sur une discussion à gauche pour consulter l'historique capté sur Messenger ou Instagram.</p>
+        </div>
+      </div>
+
+      <!-- MODALE RESUME IA QUOTIDIEN -->
+      <div class="digest-panel" id="digest-panel" style="display: none;">
+        <div class="digest-header">
+          <h3>📋 Rapport Quotidien Intelligent</h3>
+          <button class="btn-close" onclick="closeDigest()">✕</button>
+        </div>
+        <div class="digest-content" id="digest-content">
+          Génération en cours...
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL DE CONNEXION FACILE AUX COMPTES -->
+  <div class="modal-overlay" id="connect-modal" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-title">Connecter un compte</h3>
+        <button class="btn-close" onclick="closeConnectModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc" id="modal-desc">
+          Entrez vos identifiants ou collez vos cookies de session pour lier votre compte de façon sécurisée à votre bridge local.
+        </p>
+
+        <div class="form-group">
+          <label>Méthode de connexion :</label>
+          <select id="login-method" onchange="toggleLoginForm()">
+            <option value="credentials">Identifiants classiques (Login + Mot de passe + 2FA)</option>
+            <option value="cookies">Cookies de session (Recommandé - Zéro challenge Meta)</option>
+          </select>
+        </div>
+
+        <div id="form-credentials">
+          <div class="form-group">
+            <label>Identifiant / Email / Téléphone :</label>
+            <input type="text" id="login-user" placeholder="ex: contact@exemple.com">
+          </div>
+          <div class="form-group">
+            <label>Mot de passe :</label>
+            <input type="password" id="login-pass" placeholder="••••••••••••">
+          </div>
+          <div class="form-group">
+            <label>Code 2FA (si activé) :</label>
+            <input type="text" id="login-2fa" placeholder="ex: 123456">
+          </div>
+        </div>
+
+        <div id="form-cookies" style="display: none;">
+          <div class="form-group">
+            <label>Valeur des cookies (c_user / sessionid) :</label>
+            <textarea id="login-cookies" rows="4" placeholder="Collez ici la valeur de vos cookies de session"></textarea>
+          </div>
+          <small class="tip">💡 Astuce : F12 sur votre navigateur > Application > Cookies.</small>
+        </div>
+
+        <div id="modal-status" class="modal-alert" style="display: none;"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeConnectModal()">Annuler</button>
+        <button class="btn-primary" id="btn-submit-login" onclick="submitAccountLogin()">Valider la connexion</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
